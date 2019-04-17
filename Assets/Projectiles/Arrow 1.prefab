@@ -117,7 +117,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9a65f880270dbc42a1a29200b5dc8c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  body: {fileID: 0}
+  popSound: {fileID: 0}
+  headshotSound: {fileID: 0}
+  hitSound: {fileID: 0}
+  dragSound: {fileID: 0}
+  throwSound: {fileID: 0}
+  cloudSound: {fileID: 0}
+  brazos: {fileID: 0}
+  manoFlecha: {fileID: 0}
+  codoFlecha: {fileID: 0}
+  codoDireccion: {fileID: 0}
+  brazoHombro: {fileID: 0}
+  hombro: {fileID: 0}
+  arco: {fileID: 0}
+  cuerda: {fileID: 0}
+  p1: {fileID: 0}
+  p2: {fileID: 0}
+  maxForceArrow: 25
+  minForceArrow: 10
   line_renderer: {fileID: 0}
   circle: {fileID: 0}
   circle2: {fileID: 0}

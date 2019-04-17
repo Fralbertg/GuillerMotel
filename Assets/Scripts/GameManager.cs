@@ -3,18 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System;
 
 public class GameManager : MonoBehaviour
 {
+
     public static GameManager sharedInstance;
-    
+    AudioSource audio_source;
+    public AudioClip mainSong;
     int hitsP1, hitsP2, pointsP1, pointsP2;
     public Text ptsp1, ptsp2, timerText;
     public GameObject healthBarP1, healthBarP2, turnPointerSprite, headshotSprite,mitadP1,mitadP2;
-    public GameObject escudoP1, escudoP2;
+    public static GameObject EscudoP1 { get; set; }
+    public static GameObject EscudoP2 { get; set; }
     private bool gameOver;
     private float time;
-    private bool isTurnP1, isTurnP2, movePlatforms, moveObstacle, showObstacle, rotateObstacle;
+    private bool isTurnP1, isTurnP2, movePlatforms;
+    public bool moveObstacle = false, showObstacle = false , rotateObstacle = false;
+
+    public float fixedSpeed = 4;
 
     GameObject player1, player2, obstacle;
     GameObject bonusLife,bonusExplosion;
@@ -25,17 +32,19 @@ public class GameManager : MonoBehaviour
     private Vector2 endPointLineP1, endPointLineP2;
     private Vector2 startPointLineP1, startPointLineP2;
     float screenCenter;
-    Arrow flechaP1,flechaP2;
-    // public GameObject p1;
+    Arrow flechaP1;
+    Player2 flechaP2;
+
     void Start()
     {
-        screenCenter = GameObject.FindGameObjectWithTag("MainCamera").transform.position.x + 3f / 2;
-
+        EscudoP1 = GameObject.FindGameObjectWithTag("escudoP1");
+        EscudoP2 = GameObject.FindGameObjectWithTag("escudoP2");
         player1 = GameObject.FindGameObjectWithTag("Player1");
         player2 = GameObject.FindGameObjectWithTag("Player2");
         obstacle = GameObject.FindGameObjectWithTag("obstacle");
         bonusLife = GameObject.FindGameObjectWithTag("bonusLife");
         bonusExplosion = GameObject.FindGameObjectWithTag("bonusExplosion");
+
         obstacle.SetActive(false);
         sharedInstance = this;
         gameOver = false;
@@ -68,73 +77,102 @@ public class GameManager : MonoBehaviour
         flechaP1 = ArrowGenerator.sharedInstance.CurrentArrow.GetComponent<Arrow>();
 
     }
-
+    void Awake()
+    {
+        audio_source = GetComponent<AudioSource>();
+        audio_source.PlayOneShot(mainSong);
+    }
     void Update()
     {
         // Debug.Log("Position current touch -> " + currentTouch.ToString());
-        Debug.Log(" im  NOT toichiiiing Position Current touch -> " + currentTouch.ToString());
-        if (Input.touchCount > 0)
+        //Debug.Log(" im  NOT toichiiiing Position Current touch -> " + currentTouch.ToString());
+        /*
+        int touchesNum = Input.touchCount;
+        if (touchesNum > 0)
             {
-            currentTouch =Input.GetTouch(0).position;
-            Debug.Log(" im toichiiiing Position Current touch -> " + currentTouch.ToString());
-            if (Input.GetTouch(0).phase == TouchPhase.Began 
-                )
+             Debug.Log("AAAAAAAAA " + currentTouch.ToString());
+
+            for (int i = 0; i < touchesNum; i++)
             {
-                startPointLineP1 = currentTouch;
+                Debug.Log(" im toichiiiing Position Current touch -> " + currentTouch.ToString());
+                currentTouch = Input.GetTouch(0).position;
+                if (Input.GetTouch(i).phase == TouchPhase.Began && currentTouch.x < screenCenter)
+                {
+                    startPointLineP1 = currentTouch;
+                }
+                else
+                {
+                    startPointLineP2 = currentTouch;
+                }
+
+                flechaP1.UpdateRope();
+                flechaP2.UpdateRope();
+
+                if (Input.GetTouch(i).phase == TouchPhase.Moved && currentTouch.x < screenCenter)
+                {
+                    endPointLineP1 = currentTouch;
+                    // isYourTurn = GameManager.sharedInstance.IsTurnP2();
+
+                    if (!GetComponent<AudioSource>().isPlaying)
+                        GetComponent<AudioSource>().PlayOneShot(flechaP1.dragSound);
+                    flechaP1.Dragging();
+
+                }
+                else// player 2
+                {
+                    endPointLineP2 = currentTouch;
+                    // isYourTurn = GameManager.sharedInstance.IsTurnP2();
+                    if (!GetComponent<AudioSource>().isPlaying)
+                        GetComponent<AudioSource>().PlayOneShot(flechaP2.dragSound);
+                    flechaP2.Dragging();
+                }
+
+                if (Input.GetTouch(i).phase == TouchPhase.Ended)
+                {
+                    flechaP1.ClearLine();
+                    //Suelto la flecha del brazo
+                    HingeJoint2D joint = GetComponent<HingeJoint2D>();
+                    joint.enabled = false;
+                    GetComponent<AudioSource>().Stop();
+                    if (!flechaP1.IsArrowThrown && flechaP1.CanThrow)
+                        flechaP1.ThrowArrow();
+                    // Reasigno el valor a la nueva flecha que se acaba de generar  
+                    flechaP1 = ArrowGenerator.sharedInstance.CurrentArrow.GetComponent<Arrow>();
+                }
+                movingArrowP1();
+                movingArrowP2();
             }
-            else
-            {
-                startPointLineP2 = currentTouch;
-            }
-
-            flechaP1.UpdateRope();
-            flechaP2.UpdateRope();
-
-            if (Input.GetTouch(0).phase == TouchPhase.Moved && currentTouch.x < screenCenter)
-            {
-
-                endPointLineP1 = currentTouch;
-                // isYourTurn = GameManager.sharedInstance.IsTurnP2();
-
-                if (!GetComponent<AudioSource>().isPlaying)
-                    GetComponent<AudioSource>().PlayOneShot(flechaP1.dragSound);
-                flechaP1.Dragging();
-
-            }
-            if (Input.GetTouch(0).phase == TouchPhase.Ended)
-            {
-
-                flechaP1.ClearLine();
-                //Suelto la flecha del brazo
-                HingeJoint2D joint = GetComponent<HingeJoint2D>();
-                joint.enabled = false;
-                GetComponent<AudioSource>().Stop();
-                if (!flechaP1.IsArrowThrown && flechaP1.CanThrow)
-                    flechaP1.ThrowArrow();
-                // Reasigno el valor a la nueva flecha que se acaba de generar  
-                flechaP1 = ArrowGenerator.sharedInstance.CurrentArrow.GetComponent<Arrow>();
-            }
-            if (flechaP1.IsArrowThrown && !flechaP1.Collided)
-            {
-                Vector2 vectorAngle = flechaP1.ArrowRB.velocity;
-
-                float angle = (Mathf.Atan2(vectorAngle.y, vectorAngle.x) * Mathf.Rad2Deg + 180);
-                // Debug.Log("Angulo flecha volando: " + angle);
-                flechaP1.ArrowRB.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-            }
-        }
-          
-        
-     
-        checkGameStatus();
+        }*/
+        CheckGameStatus();
     }
 
+
+
+    void movingArrowP1()
+    {
+        if (flechaP1.IsArrowThrown && !flechaP1.Collided)
+        {
+            Vector2 vectorAngle = flechaP1.ArrowRB.velocity;
+
+            float angle = (Mathf.Atan2(vectorAngle.y, vectorAngle.x) * Mathf.Rad2Deg + 180);
+            // Debug.Log("Angulo flecha volando: " + angle);
+            flechaP1.ArrowRB.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        }
+    }
+
+    void movingArrowP2()
+    {
+        if (flechaP2.IsArrowThrown && !flechaP2.Collided)
+        {
+            Vector2 vectorAngle = flechaP2.ArrowRB.velocity;
+
+            float angle = (Mathf.Atan2(vectorAngle.y, vectorAngle.x) * Mathf.Rad2Deg + 180);
+            // Debug.Log("Angulo flecha volando: " + angle);
+            flechaP2.ArrowRB.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        }
+    }
     void FixedUpdate()
     {
-
-
-
-
         if (movePlatforms)
         {
             MovePlatform1();
@@ -150,7 +188,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void checkGameStatus()
+    void CheckGameStatus()
     {
         if (hitsP1 >= 3)
         {
@@ -169,12 +207,34 @@ public class GameManager : MonoBehaviour
         }
         if (showObstacle)
             obstacle.SetActive(true);
+        else
+            obstacle.SetActive(false);
+
+        if (moveObstacle)
+            MoveObstacle();
+        if (rotateObstacle)
+            RotateObstacle();
+        if (movePlatforms)
+            MovePlatforms();
+        
     }
+
+    private void MovePlatforms()
+    {
+        MovePlatform1();
+        MovePlatform2();
+    }
+    private void StopPlatforms()
+    {
+        StopPlatform1();
+        StopPlatform2();
+    }
+
     private void MovePlatform1()
     {
         if (target != null)
         {
-            float fixedSpeed = speed * Time.deltaTime;
+            fixedSpeed = 4 * Time.deltaTime;
             player1.transform.position = Vector3.MoveTowards(player1.transform.position, target.position, fixedSpeed);
         }
         if (player1.transform.position == target.position)
@@ -194,6 +254,15 @@ public class GameManager : MonoBehaviour
             target2.position = (target2.position == startP2) ? endP2 : startP2;
         }
     }
+    private void StopPlatform1()
+    {
+        player1.transform.position = Vector3.zero;
+    }
+    private void StopPlatform2()
+    {
+        player2.transform.position = Vector3.zero;
+    }
+
     private void RotateObstacle()
     {
         float speedRotation = 30;
@@ -205,13 +274,16 @@ public class GameManager : MonoBehaviour
         if (targetObstacle != null)
         {
 
-            float fixedSpeed = 4 * Time.deltaTime;
             obstacle.transform.position = Vector3.MoveTowards(obstacle.transform.position, targetObstacle.position, fixedSpeed);
         }
         if (obstacle.transform.position == targetObstacle.position)
         {
             targetObstacle.position = (target2.position == startP2) ? endO : startO;
         }
+    }
+    private void StopObstacle()
+    {
+        obstacle.transform.position = Vector3.zero;
     }
     public void ShowPauseMenu()
     {
@@ -220,28 +292,8 @@ public class GameManager : MonoBehaviour
     }
     public void RespawnP1()
     {
-
-        Debug.Log("Destroying Player1");
-        /*
-        GameObject player1_aux=Instantiate(player1);
-        KillP1();
-        Destroy(player1);
-        player1 = player1_aux;
-        */
-        //GameObject[] arrows = GameObject.FindGameObjectsWithTag("arrow");
-        /*GameObject lastArrow = ArrowGenerator.sharedInstance.LastArrow();
-        foreach(GameObject a in arrows)
-        {
-            Destroy(a);
-        }*/
-
-
-        //Instantiate(player1);
-        //Instantiate(lastArrow);
-        //Destroy(player1);
-        //player1 = Instantiate(p1);
-        player1.transform.position = new Vector2(Random.Range(startP1.x, endP1.x),
-            Random.Range(startP1.y, endP1.y));
+        player1.transform.position = new Vector2(UnityEngine.Random.Range(startP1.x, endP1.x),
+            UnityEngine.Random.Range(startP1.y, endP1.y));
         hitsP1 = 0;
         healthBarP1.transform.localScale = new Vector3(1.01f, 1, 1);
         pointsP2++;
@@ -251,8 +303,8 @@ public class GameManager : MonoBehaviour
     public void RespawnP2()
     {
         hitsP2 = 0;
-        player2.transform.position = new Vector2(Random.Range(startP2.x, endP2.x),
-             Random.Range(startP2.y, endP2.y));
+        player2.transform.position = new Vector2(UnityEngine.Random.Range(startP2.x, endP2.x),
+             UnityEngine.Random.Range(startP2.y, endP2.y));
         pointsP1++;
         ptsp1.text = pointsP1.ToString();
     }
@@ -341,7 +393,7 @@ public class GameManager : MonoBehaviour
             mitadP1.transform.Rotate(
             mitadP1.transform.rotation.x,
             mitadP1.transform.rotation.y,
-            1, Space.Self);
+            2, Space.Self);
             yield return new WaitForSeconds(0.01f);
         }
         for(float i =0; i < 10; i++)
@@ -350,7 +402,7 @@ public class GameManager : MonoBehaviour
             mitadP1.transform.Rotate(
            mitadP1.transform.rotation.x,
            mitadP1.transform.rotation.y,
-           -1, Space.Self);
+           -2, Space.Self);
             yield return new WaitForSeconds(0.01f);
         }
     }
@@ -362,7 +414,7 @@ public class GameManager : MonoBehaviour
             mitadP2.transform.Rotate(
                                     mitadP2.transform.rotation.x,
                                     mitadP2.transform.rotation.y,
-                                    -1, Space.Self);
+                                    -2, Space.Self);
             cabeza.transform.Rotate(cabeza.transform.rotation.x, cabeza.transform.rotation.y, -1, Space.Self);
 
             yield return new WaitForSeconds(0.01f);
@@ -372,7 +424,7 @@ public class GameManager : MonoBehaviour
             mitadP2.transform.Rotate(
                                    mitadP2.transform.rotation.x,
                                    mitadP2.transform.rotation.y,
-                                   1, Space.Self);
+                                   2, Space.Self);
             cabeza.transform.Rotate(cabeza.transform.rotation.x, cabeza.transform.rotation.y, 1, Space.Self);
 
             yield return new WaitForSeconds(0.01f);
@@ -457,11 +509,11 @@ public class GameManager : MonoBehaviour
     }
     public void HitEscudoP1()
     {
-        escudoP1.GetComponent<ParticleSystem>().Play();
+        EscudoP1.GetComponent<ParticleSystem>().Play();
     }
     public void HitEscudoP2()
     {
-        escudoP2.GetComponent<ParticleSystem>().Play();
+        EscudoP2.GetComponent<ParticleSystem>().Play();
     }
     private void InitializeWeapon(bool isP1,string weaponGeneratorTag)
     {
@@ -546,7 +598,7 @@ public class GameManager : MonoBehaviour
             string seconds = (time % 60).ToString("00");
             string fraction = ((time * 100) % 100).ToString("00");
             timerText.text = minutes + ":" + seconds + ":" + fraction;
-            if (minutes == "02" && seconds == "515")
+            if (minutes == "02" && seconds == "30")
                 movePlatforms = true;
             if (minutes == "02" && seconds == "10")
                 showObstacle = true;

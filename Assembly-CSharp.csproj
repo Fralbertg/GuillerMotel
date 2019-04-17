@@ -55,16 +55,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Player1.cs" />
-    <Compile Include="Assets\sc.cs" />
     <Compile Include="Assets\Scripts\Arrow.cs" />
-    <Compile Include="Assets\Scripts\ArrowEnemie.cs" />
     <Compile Include="Assets\Scripts\ArrowEnemyGenerator.cs" />
     <Compile Include="Assets\Scripts\ArrowGenerator.cs" />
+    <Compile Include="Assets\Scripts\Explosion.cs" />
     <Compile Include="Assets\Scripts\GameManager.cs" />
     <Compile Include="Assets\Scripts\GIF.cs" />
     <Compile Include="Assets\Scripts\MainMenu.cs" />
     <Compile Include="Assets\Scripts\PauseMenu.cs" />
+    <Compile Include="Assets\Scripts\Player.cs" />
+    <Compile Include="Assets\Scripts\Player1.cs" />
+    <Compile Include="Assets\Scripts\Player2.cs" />
+    <Compile Include="Assets\Scripts\ProjectileDragging.cs" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>C:/Users/FRAN/Guiller Motel/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>

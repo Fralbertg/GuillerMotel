@@ -10,9 +10,9 @@ public class ArrowGenerator : MonoBehaviour
     private GameObject firstArrow;
     private GameObject arrow;
     private List<GameObject> arrows;
-
+    private GameObject currentArrow;
     public List<GameObject> Arrows { get { return arrows; } }
-    public GameObject CurrentArrow { get { return arrows[arrows.Count - 1]; } set { CurrentArrow = value; } }
+    public GameObject CurrentArrow { get { return arrows[arrows.Count - 1]; } set { currentArrow = value; } }
 
     void Awake()
     {
@@ -39,19 +39,23 @@ public class ArrowGenerator : MonoBehaviour
         //este if ......
         if(currentArrow == CurrentArrow)
         {
-            GameObject newArrow;
-            newArrow = Instantiate(currentArrow);
-            //le quito FreezePosition y FreezeRotation
-            newArrow.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.None;
-            newArrow.GetComponent<TrailRenderer>().enabled = false;
-            //coloco la flecha en el brazo
-            newArrow.transform.position = bow.transform.position;
-            newArrow.transform.rotation = new Quaternion(
-                                                        bow.transform.rotation.x,
-                                                        bow.transform.rotation.y,
-                                                        bow.transform.rotation.z + 180f,
-                                                        bow.transform.rotation.w);
+            GameObject newArrow = Instantiate(currentArrow);
+            InitArrowValues(newArrow);
             arrows.Add(newArrow); 
         }
+    }
+
+    private void InitArrowValues(GameObject newArrow)
+    {
+        //le quito FreezePosition y FreezeRotation
+        newArrow.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.None;
+        newArrow.GetComponent<TrailRenderer>().enabled = false;
+        //coloco la flecha en el brazo
+        newArrow.transform.position = bow.transform.position;
+        newArrow.transform.rotation = new Quaternion(
+                                                    bow.transform.rotation.x,
+                                                    bow.transform.rotation.y,
+                                                    bow.transform.rotation.z + 180f,
+                                                    bow.transform.rotation.w);
     }
 }

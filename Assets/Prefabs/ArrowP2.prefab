@@ -462,15 +462,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 1969485647}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e17ed6af687b33e4b952dc9b791c1392, type: 3}
+  m_Script: {fileID: 11500000, guid: accaab5cd531e4145a6ff8a4ad71585a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  popSound: {fileID: 0}
-  headshotSound: {fileID: 0}
-  hitSound: {fileID: 0}
-  dragSound: {fileID: 0}
-  throwSound: {fileID: 0}
-  cloudSound: {fileID: 0}
+  popSound: {fileID: 8300000, guid: 98c7bb52e2cef824faab7e8bbf0192b2, type: 3}
+  headshotSound: {fileID: 8300000, guid: 06001eeb2022cae4888bfc4025347ce2, type: 3}
+  hitSound: {fileID: 8300000, guid: a8815a2c5dc4a3847add899ebc4827fa, type: 3}
+  dragSound: {fileID: 8300000, guid: 9226242a24ddcf04ca47ff7756d9238d, type: 3}
+  throwSound: {fileID: 8300000, guid: 1ce29133504b624458eefa296d41fd1b, type: 3}
+  cloudSound: {fileID: 8300000, guid: 03e9b902f57c2d447a65d65a1f71d1c9, type: 3}
+  maxForceArrow: 25
+  minForceArrow: 10
   brazos: {fileID: 0}
   arco: {fileID: 0}
   manoFlecha: {fileID: 0}
@@ -480,6 +482,8 @@ MonoBehaviour:
   hombro: {fileID: 0}
   p1: {fileID: 0}
   p2: {fileID: 0}
+  explosion: {fileID: 7163323417664935849, guid: 6c59e4a60e02da544b06541edb5c1c0f,
+    type: 3}
   line_renderer: {fileID: 0}
   cuerda: {fileID: 0}
   circle: {fileID: 0}

@@ -1217,7 +1217,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 47bed41c2a33db347b24c3a4bc480ccb, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 84242640f1a129342acc8f0ac1be91d1, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -2006,7 +2006,8 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.x
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7263585388126976252, guid: 1e2ad7554fcccf743816440d8af7d139, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 1e2ad7554fcccf743816440d8af7d139, type: 3}
 --- !u!224 &1840151796 stripped
 RectTransform:

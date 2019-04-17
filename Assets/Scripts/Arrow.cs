@@ -4,16 +4,20 @@ using UnityEngine;
 
 public class Arrow : MonoBehaviour
 {
-    AudioSource audio;
-    public AudioClip popSound { get; }
-    public AudioClip headshotSound { get; }
-    public AudioClip hitSound { get; }
-    public AudioClip dragSound { get; }
-    public AudioClip throwSound { get; }
-    public AudioClip cloudSound { get; }
+    #region sonidos 
+    public AudioSource audio;
+    public AudioClip popSound;
+    public AudioClip headshotSound;
+    public AudioClip hitSound;
+    public AudioClip dragSound;
+    public AudioClip throwSound;
+    public AudioClip cloudSound;
+    #endregion
 
 
+    #region Cuerpo
     public Rigidbody2D brazos;
+    public Rigidbody2D ArrowRB { get; set; }
     public GameObject manoFlecha;
     public GameObject codoFlecha;
     public GameObject codoDireccion;
@@ -22,53 +26,46 @@ public class Arrow : MonoBehaviour
     public GameObject arco;
     public LineRenderer cuerda;
     public GameObject p1, p2;
+    #endregion
 
+
+
+    #region Variables de estado
+    public float maxForceArrow = 25f;
+    public float minForceArrow = 10f;
     private float maxDragDistance = 2.8f;
     private float distance;
     private float timeSinceLastArrow;
-    public LineRenderer line_renderer;
-    public GameObject circle, circle2;
-    private Vector2 endPointLine;
-    private Vector2 startPointLine;
-    private Vector2 mousePosition;
-    private Vector2 direction;
-
-    public Rigidbody2D ArrowRB { get; set; }
     public bool Collided { get; set; }
     public bool IsArrowThrown { get; set; }
     public bool IsTurnP1 { get; set; }
     public bool CanThrow { get; set; }
- 
+    #endregion
+
+    #region UI
+    public GameObject explosion;
+    public LineRenderer line_renderer;
+    public GameObject circle, circle2;
+    #endregion
+
+    #region Vectores
+    private Vector2 endPointLine;
+    private Vector2 startPointLine;
+    private Vector2 mousePosition;
+    private Vector2 direction;
+    #endregion
+
+
     // Start is called before the first frame update
     private void Awake()
     {
-        audio = GetComponent<AudioSource>();
-        ArrowGenerator.sharedInstance.CurrentArrow = gameObject;
-        cuerda.SetPosition(0, p1.gameObject.transform.position);
-        cuerda.SetPosition(2, p2.gameObject.transform.position);
-        cuerda.SetPosition(1, manoFlecha.transform.position);
-
-        ArrowRB = GetComponent<Rigidbody2D>();
-        ArrowRB.gameObject.GetComponent<Collider2D>().isTrigger = true;
-
-        //esto no funca
-        ArrowRB.GetComponent<TrailRenderer>().enabled=false;
-        IsArrowThrown = false;
-        circle.SetActive(false);
-        circle2.SetActive(false);
-        Collided = false;
-        CanThrow = false;
-        ArrowRB.isKinematic = true;
-        //arrowRB.position = bow.transform.position;
-
+        InitComponents();
+        InitStatusVariables();
         InitLineRenderer();
-        timeSinceLastArrow = 0;
-        //Debug.Log("Arrow spawned in -> " + arrowRB.transform.position.ToString());
     }
 
     void Start()
     {
-
     }
     // Update is called once per frame
     void Update()
@@ -131,8 +128,16 @@ public class Arrow : MonoBehaviour
         if (collider.gameObject.tag == "nube")
         {
             collider.gameObject.GetComponent<ParticleSystem>().Play();
+            
             audio.PlayOneShot(cloudSound);
-
+        }
+        if (collider.gameObject.tag == "escudoP2")
+        {
+            GameManager.sharedInstance.HitEscudoP2();
+            Instantiate(explosion, transform.position, Quaternion.identity);
+            Debug.Log("ArrowP1 touch EscudoP2");
+            Destroy(gameObject);
+            //gameObject.GetComponent<TrailRenderer>().autodestruct = true;
         }
     }
     void OnCollisionEnter2D(Collision2D collision)
@@ -221,11 +226,12 @@ public class Arrow : MonoBehaviour
                 Collided = true;
                 if(!ArrowRB.gameObject.GetComponent<Collider2D>().isTrigger)
                     GameManager.sharedInstance.AddHitP2();
-                ArrowRB.gameObject.GetComponent<Collider2D>().isTrigger = true;
+                GetComponent<Collider2D>().isTrigger = true;
                 break;
             /***/
             case "escudoP2":
-                GameManager.sharedInstance.HitEscudoP2();
+
+
                 break;
             case "explosionBonus":
                 GameManager.sharedInstance.BonusExplosionHit(true);
@@ -234,9 +240,6 @@ public class Arrow : MonoBehaviour
                 GameManager.sharedInstance.BonusLifeHit(false);
                 break;
         }
-  
-
-      
     }
   
     public void Dragging()
@@ -291,38 +294,36 @@ public class Arrow : MonoBehaviour
 
     public void ThrowArrow()
     {
-        ArrowRB.transform.position = codoDireccion.transform.position;
-        manoFlecha.transform.position = codoDireccion.transform.position;
-        brazoHombro.transform.position = codoFlecha.transform.position;
-        ArrowRB.gameObject.GetComponent<Collider2D>().isTrigger = false;
-
-        if (distance > 0.7f)
+        ColocateArms();
+        float minDinstance = 0.7f;
+        if (distance > minDinstance)
         {
-            //Debug.Log("Throwing arrow...");
-            //lo dejo dinamico
             ArrowRB.isKinematic = false;
             
             Vector2 direction = (startPointLine - endPointLine).normalized;
+
             if (distance > maxDragDistance)
-                ArrowRB.velocity = direction * 25;
+                ArrowRB.velocity = direction * maxForceArrow;
             else
-                ArrowRB.velocity = direction * distance * 10;
+                ArrowRB.velocity = direction * distance * minForceArrow;
 
             ArrowRB.GetComponent<TrailRenderer>().enabled = true;
             IsArrowThrown = true;
-            GameManager.sharedInstance.SetTurnP1(false);
+
             audio.PlayOneShot(throwSound);
+
             // AÑADO FLECHA Y SI HAY MÁS DE 10 ELIMINO LA PRIMERA DE LA LISTA
             ArrowGenerator.sharedInstance.AddArrow(gameObject);
-            //Debug.Log("LIST COUNT -> " + ArrowGenerator.sharedInstance.GetArrows().Count);
             if (ArrowGenerator.sharedInstance.Arrows.Count >= 15)
             {
-                DestroyArrow();
+                DestroyLastArrow();
             }
+
             cuerda.positionCount = 0;
+            GameManager.sharedInstance.SetTurnP1(false);
         }
     }
-    public void DestroyArrow()
+    public void DestroyLastArrow()
     {
         Destroy(ArrowGenerator.sharedInstance.Arrows[0]);
         ArrowGenerator.sharedInstance.DestroyArrow(ArrowGenerator.sharedInstance.Arrows[0]);
@@ -333,19 +334,51 @@ public class Arrow : MonoBehaviour
         circle.gameObject.SetActive(false);
         circle2.gameObject.SetActive(false);
     }
+    private void ColocateArms()
+    {
+        ArrowRB.transform.position = codoDireccion.transform.position;
+        manoFlecha.transform.position = codoDireccion.transform.position;
+        brazoHombro.transform.position = codoFlecha.transform.position;
+        ArrowRB.gameObject.GetComponent<Collider2D>().isTrigger = false;
+    }
     public void UpdateRope()
     {
+        //updaterope and arrow position in the arm
+
         cuerda.positionCount = 3;
         cuerda.SetPosition(0, p1.transform.position);
         cuerda.SetPosition(1, manoFlecha.transform.position);
         cuerda.SetPosition(2, p2.transform.position);
-        if(!IsArrowThrown)
-        ArrowRB.position= codoDireccion.transform.position;
+
+        if (!IsArrowThrown)
+            ArrowRB.position = codoDireccion.transform.position;
     }
-    public void InitLineRenderer()
+
+    private void InitComponents()
+    {
+        ArrowRB = GetComponent<Rigidbody2D>();
+        ArrowRB.isKinematic = true;
+        ArrowRB.gameObject.GetComponent<Collider2D>().isTrigger = true;
+
+        cuerda.SetPosition(0, p1.gameObject.transform.position);
+        cuerda.SetPosition(2, p2.gameObject.transform.position);
+        cuerda.SetPosition(1, manoFlecha.transform.position);
+
+        circle.SetActive(false);
+        circle2.SetActive(false);
+    }
+
+    private void InitStatusVariables()
+    {
+        Collided = false;
+        CanThrow = false;
+        IsArrowThrown = false;
+        timeSinceLastArrow = 0;
+    }
+
+    private void InitLineRenderer()
     {
         //Modify the LineRenderer
-        line_renderer.startColor = UnityEngine.Color.white;
         line_renderer.startColor = UnityEngine.Color.white;
         line_renderer.startWidth = 0.05f;
         line_renderer.positionCount = 2;
