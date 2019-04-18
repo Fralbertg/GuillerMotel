@@ -37,9 +37,9 @@ public class ProjectileDragging : MonoBehaviour
         { 
             GameManager.sharedInstance.showObstacle = true;
             // TIENES pocas OPCIONES -> 
-            //                      1- Script Grande con dos circles y 2 line renderer 
+            //                      1- Script Grande con 4 circles y 2 line renderer 
             //                      2- Controlas la lista de Input.touches para que no colisiones nuevos valores(nuevos touches) 
-            //
+            //                          2.1- Lo haces guardando el índice o lo haces guardando el puntero.... 
             //      Conforme está ahora puedes hacer una linea a un lado, luego al otro y entonces si no sueltas 
             //      ningún dedo podrás mover la última línea pero no la primera que ha sido creada.
             //
